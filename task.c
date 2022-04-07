@@ -1,4 +1,3 @@
-#include "csapp.h"
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -9,6 +8,8 @@
 #include <signal.h>
 
 #define MAXARGS 100
+#define MAXLINE 100
+
 extern char **environ;
 int builtin_command(char *argv[]);
 int parseline(char *buf, char *argv[]);
@@ -16,10 +17,18 @@ void eval(char *cmdline);
 int pip_check(char *buf);
 void pip_parsecmd(char *cmdline, char *piped_cmd[]);
 char *trim(char *temp);
+void sigint_handler(int sig);
+void unix_error(char *msg);
+char *Fgets(char *ptr, int n, FILE *stream);
+pid_t Fork(void);
+ssize_t sio_puts(char s[]);
+static size_t sio_strlen(char s[]);
 
 int main() {
     char cmdline[MAXLINE];
 
+    if (signal(SIGINT, sigint_handler) == SIG_ERR)
+        unix_error("signal error");
     while (1) {
         /* read */
         printf("CSE4100:P4-myshell>");
@@ -30,6 +39,40 @@ int main() {
 
         eval(cmdline);
     }
+}
+static size_t sio_strlen(char s[]) {
+    int i = 0;
+
+    while (s[i] != '\0')
+        ++i;
+    return i;
+}
+ssize_t sio_puts(char s[]) {
+    return write(STDOUT_FILENO, s, sio_strlen(s)); //line:csapp:siostrlen
+}
+pid_t Fork(void) {
+    pid_t pid;
+
+    if ((pid = fork()) < 0)
+	unix_error("Fork error");
+    return pid;
+}
+char *Fgets(char *ptr, int n, FILE *stream) {
+    char *rptr;
+
+    if (((rptr = fgets(ptr, n, stream)) == NULL) && ferror(stream))
+	    unix_error("Fgets error");
+
+    return rptr;
+}
+void unix_error(char *msg) {
+    fprintf(stderr, "%s: %s\n", msg, strerror(errno));
+    exit(0);
+}
+void sigint_handler(int sig) {
+    sio_puts("\n");
+    sio_puts("CSE4100:P4-myshell>");
+    return;
 }
 char *trim(char *temp) {
     char *org = temp;
