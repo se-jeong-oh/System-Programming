@@ -74,15 +74,44 @@ void print_arg(char *argv[]) {
     return;
 }
 int parseline(char *buf, char *argv[]) {
-    int i = 0;
-    char *temp = strtok(buf," ");
+    int i = 0, j = 0;
+    char *temp;
+    char *org;
+    char tar;
+    while(buf[i] != '\0') {
+        if(buf[i] == '\"' || buf[i] == '\'') {
+            tar = buf[i];
+            i++;
+            while(buf[i] != tar) {
+                if(buf[i] == ' ') {
+                    buf[i] = tar;
+                }
+                i++;
+            }
+        }
+        i++;
+    }
+    i = 0;
+    temp = strtok(buf," ");
     while (temp != NULL) {
+        if(temp[0] == '\"' || temp[0] == '\'') {
+            tar = temp[0];
+            temp[strlen(temp)-1] = '\0';
+            temp[0] = '\0';
+            temp = &temp[1];
+            j = 0;
+            while(temp[j] != '\0') {
+                if(temp[j] == tar) {
+                    temp[j] = ' ';
+                }
+                j++;
+            }
+        }
         argv[i] = temp;
         i++;
         temp = strtok(NULL," ");
     }
     argv[i] = NULL;
-    //print_arg(argv);
     return 0;
 }
 int pip_check(char *buf) {
