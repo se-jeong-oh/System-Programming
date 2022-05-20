@@ -2,11 +2,11 @@ CC=gcc
 CFLAGS = -g -O2 -I.
 LDLIBS = -lpthread
 
-PROGS = task
+PROGS = myshell
 
-all: csapp.o  $(PROGS)
+all: myshell.o  $(PROGS)
 
-$(PROGS): csapp.o
+$(PROGS): myshell.o
 
 clean:
 	rm -rf $(PROGS) *~
